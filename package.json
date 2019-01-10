@@ -1,0 +1,19 @@
+{
+  "name": "nn-function-generator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:urish/nn-function-generator.git",
+  "author": "Uri Shaked <uri@urishaked.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/index"
+  },
+  "dependencies": {
+    "@phenomnomnominal/tsquery": "^3.0.0",
+    "@types/node": "^10.12.18",
+    "typescript": "^3.2.2"
+  },
+  "devDependencies": {
+    "ts-node": "^7.0.1"
+  }
+}
