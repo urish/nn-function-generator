@@ -31,6 +31,9 @@ createInterface({ input }).on('line', (entry) => {
   const args = fnNode.parameters;
   const body = trimBody(fnNode.body!.getText());
   console.log({
+    id: parsedRecord.id,
+    line: parseInt(parsedRecord.line, 10),
+    character: parseInt(parsedRecord.character, 10),
     name,
     argCount: args.length,
     argNames: args.map((n) => n.name.getText()),
