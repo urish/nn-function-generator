@@ -6,7 +6,8 @@
   "author": "Uri Shaked <uri@urishaked.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index"
+    "start": "ts-node src/index",
+    "test": "jest"
   },
   "dependencies": {
     "@phenomnomnominal/tsquery": "^3.0.0",
@@ -14,6 +15,21 @@
     "typescript": "^3.2.2"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.12",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.5",
     "ts-node": "^7.0.1"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "testMatch": [
+      "**/*.spec.ts"
+    ]
   }
 }
