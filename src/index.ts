@@ -37,6 +37,7 @@ createInterface({ input }).on('line', (entry) => {
     name,
     argCount: args.length,
     argNames: args.map((n) => n.name.getText()),
+    prolog: parsedRecord.text.substr(0, fnNode.body!.getStart()).trim(),
     body,
   });
 });
