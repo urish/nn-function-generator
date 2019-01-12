@@ -52,8 +52,8 @@ inputStream
     const ast = tsquery.ast(parsedRecord.text);
     const fnNode = tsquery.query<FunctionDeclaration>(ast, 'FunctionDeclaration')[0];
 
-    if (!fnNode.body) {
-      // empty function?
+    if (!fnNode.body || !fnNode.body.statements.length) {
+      // Empty function
       return;
     }
 
