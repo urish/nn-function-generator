@@ -31,6 +31,7 @@ const NEW_LINE = '\r\n';
 const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
 const N_OBSERVATIONS = 2;
+const MAX_SIGNATURE_LENGTH = 100;
 const MAX_BODY_LENGTH = 100;
 
 function removeNewlines(body: string) {
@@ -56,6 +57,7 @@ inputStream
     const parsedRecord = JSON.parse(entry) as IInputRecord;
     const ast = tsquery.ast(parsedRecord.text);
     const fnNode = tsquery.query<FunctionDeclaration>(ast, 'FunctionDeclaration')[0];
+    const prolog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
     if (!fnNode.body || !fnNode.body.statements.length) {
       // Empty function
@@ -64,6 +66,13 @@ inputStream
 
     if (fnNode.body.getWidth() > MAX_BODY_LENGTH) {
       // removing very long functions
+      return;
+    }
+
+    console.log(prolog.length);
+
+    if (prolog.length > MAX_SIGNATURE_LENGTH) {
+      // remove very long function signatures
       return;
     }
 
@@ -80,7 +89,7 @@ inputStream
       name,
       argCount: args.length,
       argNames: args.map((n) => n.name.getText()),
-      prolog: parsedRecord.text.substr(0, fnNode.body!.getStart()).trim(),
+      prolog,
       body,
     };
 
