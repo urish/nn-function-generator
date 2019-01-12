@@ -112,6 +112,6 @@ decoder_output = Dense(vocab_size, activation='softmax')(decoder)
 
 # compile model
 model = Model(inputs=[x1_input, x2_input], outputs=decoder_output)
-model.compile(loss='categorical_crossentropy', optimizer='adam')
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 
 model.fit([X1_signatures, X2_bodies], y, epochs=10, batch_size=64, shuffle=False)
