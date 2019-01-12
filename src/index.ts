@@ -30,7 +30,12 @@ interface IFunction {
 const NEW_LINE = '\r\n';
 const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
-const N_OBSERVATIONS = 1000;
+const N_OBSERVATIONS = 2;
+const MAX_BODY_LENGTH = 100;
+
+function removeNewlines(body: string) {
+  return body.replace(/\r?\n|\r/g, ' ');
+}
 
 const spinner = Ora('Creating dataset. Hold tight!');
 const input = createReadStream(join(__dirname, '../data/typescript-all-functions.json.gz')).pipe(createGunzip());
@@ -57,7 +62,7 @@ inputStream
       return;
     }
 
-    if (fnNode.body.getWidth() > 100) {
+    if (fnNode.body.getWidth() > MAX_BODY_LENGTH) {
       // removing very long functions
       return;
     }
@@ -66,7 +71,7 @@ inputStream
 
     const name = fnNode.name ? fnNode.name.text : ''; // empty = default function
     const args = fnNode.parameters;
-    const body = `${START_SYMBOL} ${fnNode.body!.getText()} ${END_SYMBOL}`;
+    const body = `${START_SYMBOL} ${removeNewlines(fnNode.body!.getText())} ${END_SYMBOL}`;
 
     const tsFunction: IFunction = {
       id: parsedRecord.id,
