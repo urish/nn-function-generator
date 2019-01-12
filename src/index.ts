@@ -32,11 +32,6 @@ const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
 const N_OBSERVATIONS = 1000;
 
-// function trimBody(body: string) {
-//   // Remove beginning/final curly braces
-//   return body.substr(1, body.length - 1).trim();
-// }
-
 const spinner = Ora('Creating dataset. Hold tight!');
 const input = createReadStream(join(__dirname, '../data/typescript-all-functions.json.gz')).pipe(createGunzip());
 
