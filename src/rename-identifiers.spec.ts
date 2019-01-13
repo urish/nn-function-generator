@@ -17,4 +17,32 @@ describe('rename-identifiers', () => {
     }
   `);
   });
+
+  it('should rename all the string literals in the given code', () => {
+    const ast = tsquery.ast(`
+    function f($arg0$, $arg1$) {
+      console.log('hello', 'world', 'hello', 'more', \`hello\`);
+    }
+  `);
+
+    expect(renameIdentifiers(ast)).toEqual(`
+    function f($arg0$, $arg1$) {
+      id0.id1('2', '3', '2', '4', \`2\`);
+    }
+  `);
+  });
+
+  it('should rename all the numeric literals in the given code', () => {
+    const ast = tsquery.ast(`
+    function f($arg0$, $arg1$) {
+      console.log(10, 0x20, 080, 0b1111);
+    }
+  `);
+
+    expect(renameIdentifiers(ast)).toEqual(`
+    function f($arg0$, $arg1$) {
+      id0.id1(2, 3, 4, 5);
+    }
+  `);
+  });
 });
