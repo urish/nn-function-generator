@@ -8,6 +8,7 @@ import { Parser } from 'json2csv';
 import chalk from 'chalk';
 import * as Ora from 'ora';
 import { dumpAstTokens } from './dump-ast';
+import { renameArgs } from './rename-args';
 
 interface IInputRecord {
   id: string;
@@ -25,6 +26,7 @@ interface IFunction {
   argCount: number;
   argNames: Array<string>;
   prolog: string;
+  originalBody: string;
   body: string;
   tokens: string;
 }
@@ -83,11 +85,15 @@ inputStream
       return;
     }
 
+    const cleanAst = tsquery.ast(renameArgs(ast));
+    const cleanFnNode = tsquery.query<FunctionDeclaration>(cleanAst, 'FunctionDeclaration')[0];
+
     n_functions++;
 
     const name = fnNode.name ? fnNode.name.text : ''; // empty = default function
     const args = fnNode.parameters;
-    const body = addSymbols(cleanBody(fnNode.body!.getText()));
+    const originalBody = addSymbols(cleanBody(fnNode.body!.getText()));
+    const body = addSymbols(cleanBody(cleanFnNode.body!.getText()));
     const tokens = addSymbols(dumpAstTokens(fnNode.body!));
 
     const tsFunction: IFunction = {
@@ -98,6 +104,7 @@ inputStream
       argCount: args.length,
       argNames: args.map((n) => n.name.getText()),
       prolog,
+      originalBody,
       body,
       tokens,
     };
