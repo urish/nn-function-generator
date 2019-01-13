@@ -49,7 +49,7 @@ const datasetPath = join(__dirname, '../data/dataset.csv');
 const csvParser = new Parser({ header: false });
 let n_functions = 0;
 
-const fields = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'body'];
+const fields = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'body', 'tokens'];
 writeFileSync(datasetPath, fields + NEW_LINE, { encoding: 'utf-8' });
 
 const inputStream = createInterface({ input });
