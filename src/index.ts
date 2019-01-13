@@ -10,6 +10,7 @@ import * as Ora from 'ora';
 import { dumpAstTokens } from './dump-ast';
 import { renameArgs } from './rename-args';
 import { renameIdentifiers } from './rename-identifiers';
+import { spaceTokens } from './space-tokens';
 
 interface IInputRecord {
   id: string;
@@ -86,7 +87,7 @@ inputStream
       return;
     }
 
-    const cleanAst = tsquery.ast(renameIdentifiers(tsquery.ast(renameArgs(ast))));
+    const cleanAst = tsquery.ast(spaceTokens(tsquery.ast(renameIdentifiers(tsquery.ast(renameArgs(ast))))));
     const cleanFnNode = tsquery.query<FunctionDeclaration>(cleanAst, 'FunctionDeclaration')[0];
 
     n_functions++;
