@@ -32,12 +32,18 @@ interface IFunction {
 const NEW_LINE = '\r\n';
 const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
-const N_OBSERVATIONS = 2;
+const N_OBSERVATIONS = 100;
 const MAX_SIGNATURE_LENGTH = 100;
 const MAX_BODY_LENGTH = 100;
 
-function removeNewlines(body: string) {
-  return body.replace(/\r?\n|\r/g, ' ');
+function cleanBody(body: string) {
+  // remove newlines
+  // convert multiple consecutive spaces into one
+  return body.replace(/\r?\n|\r/g, ' ').replace(/\s\s+/g, ' ');
+}
+
+function addSymbols(data: string) {
+  return `${START_SYMBOL} ${data} ${END_SYMBOL}`;
 }
 
 const spinner = Ora('Creating dataset. Hold tight!');
@@ -47,7 +53,7 @@ const datasetPath = join(__dirname, '../data/dataset.csv');
 const csvParser = new Parser({ header: false });
 let n_functions = 0;
 
-const fields = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'body'];
+const fields = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'body', 'tokens'];
 writeFileSync(datasetPath, fields + NEW_LINE, { encoding: 'utf-8' });
 
 const inputStream = createInterface({ input });
@@ -59,7 +65,6 @@ inputStream
     const parsedRecord = JSON.parse(entry) as IInputRecord;
     const ast = tsquery.ast(parsedRecord.text);
     const fnNode = tsquery.query<FunctionDeclaration>(ast, 'FunctionDeclaration')[0];
-    const prolog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
     if (!fnNode.body || !fnNode.body.statements.length) {
       // Empty function
@@ -71,7 +76,7 @@ inputStream
       return;
     }
 
-    console.log(prolog.length);
+    const prolog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
     if (prolog.length > MAX_SIGNATURE_LENGTH) {
       // remove very long function signatures
@@ -82,7 +87,8 @@ inputStream
 
     const name = fnNode.name ? fnNode.name.text : ''; // empty = default function
     const args = fnNode.parameters;
-    const body = `${START_SYMBOL} ${removeNewlines(fnNode.body!.getText())} ${END_SYMBOL}`;
+    const body = addSymbols(cleanBody(fnNode.body!.getText()));
+    const tokens = addSymbols(dumpAstTokens(fnNode.body!));
 
     const tsFunction: IFunction = {
       id: parsedRecord.id,
@@ -93,7 +99,7 @@ inputStream
       argNames: args.map((n) => n.name.getText()),
       prolog,
       body,
-      tokens: dumpAstTokens(fnNode.body!),
+      tokens,
     };
 
     const observation = csvParser.parse(tsFunction) + NEW_LINE;

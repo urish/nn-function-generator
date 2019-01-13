@@ -2,3 +2,7 @@ node_modules
 *.log
 *.csv
 *.python-version
+log
+__pycache__
+*.h5
+*.pickle
