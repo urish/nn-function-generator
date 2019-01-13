@@ -1,11 +1,6 @@
 import * as ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
-
-interface IRenameEntry {
-  start: number;
-  end: number;
-  newName: string;
-}
+import { applyEdits, IEditEntry } from './rename-utils';
 
 export function virtualCompilerHost(
   sourceFile: ts.SourceFile,
@@ -24,17 +19,6 @@ export function virtualCompilerHost(
   return host;
 }
 
-export function virtualTsConfigHost(tsConfig: { [key: string]: any }) {
-  return {
-    fileExists: ts.sys.fileExists,
-
-    // readFile will be called to read the compiler options from tsconfig.json, so we mock
-    // it to return a basic configuration that will be used during the integration tests
-    readFile: jest.fn(() => JSON.stringify(tsConfig)),
-    useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
-  };
-}
-
 // similar to ts.transpile(), but also does type checking and throws in case of error
 export function createProgram(sourceFile: ts.SourceFile, filename: string) {
   const compilerOptions = {
@@ -50,7 +34,7 @@ export function renameArgs(ast: ts.SourceFile) {
   const typeChecker = program.getTypeChecker();
   const fnNode = tsquery.query<ts.FunctionDeclaration>(ast, 'FunctionDeclaration')[0];
   const identifiers = tsquery.query<ts.Identifier>(ast, 'Identifier');
-  const renameList: IRenameEntry[] = [];
+  const renameList: IEditEntry[] = [];
   const params: ts.NodeArray<ts.Declaration> = fnNode.parameters;
   for (const identifier of identifiers) {
     const symbol = typeChecker.getSymbolAtLocation(identifier);
@@ -63,16 +47,11 @@ export function renameArgs(ast: ts.SourceFile) {
         renameList.push({
           start: identifier.getStart(),
           end: identifier.getEnd(),
-          newName: `$arg${argIndex}$`,
+          newText: `$arg${argIndex}$`,
         });
       }
     }
   }
-  renameList.sort((a, b) => b.start - a.start);
-  let result = ast.getFullText();
-  for (const entry of renameList) {
-    result = result.substr(0, entry.start) + entry.newName + result.substr(entry.end);
-  }
 
-  return result;
+  return applyEdits(ast.getFullText(), renameList);
 }
