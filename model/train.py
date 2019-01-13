@@ -1,3 +1,7 @@
+import numpy as np
+import pandas as pd
+import pickle
+
 from os import listdir, getcwd
 from numpy import array
 from keras.preprocessing.text import Tokenizer, one_hot
@@ -5,12 +9,14 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.models import Model, Sequential
 from keras.utils import to_categorical
 from keras.layers import Embedding, concatenate, LSTM, Dropout, Input, Reshape, Dense
-import numpy as np
-import pandas as pd
+from keras.callbacks import ModelCheckpoint, TensorBoard
+from utils import get_max_seq_length, encode_and_pad
 
 # --- Parameters ---
 
 max_seq_len = 100
+batch_size = 64
+n_epochs = 300
 
 # ---
 
@@ -42,32 +48,20 @@ sequences = tokenizer.texts_to_sequences(inputs)
 function_signatures = sequences[:n_observations]
 function_bodies = sequences[n_observations:]
 
-def get_max_seq_length(seqs):
-  length = max(len(s) for s in seqs)
-  return max_seq_len if length < max_seq_len else length
-
 # signature length is fixed
-max_signature_seq_length = get_max_seq_length(function_signatures)
-max_body_seq_length = get_max_seq_length(function_bodies)
+max_signature_seq_length = get_max_seq_length(function_signatures, max_seq_len)
+max_body_seq_length = get_max_seq_length(function_bodies, max_seq_len)
 
-print(function_signatures)
-print(function_bodies)
+# print(function_signatures)
+# print(function_bodies)
 
-print('----------------')
-
-def encode_and_pad(seq, max_length=None):
-  one_hot_encoded = list()
-
-  if max_length:
-    seq = pad_sequences([seq], maxlen=max_length)[0]
-
-  return [to_categorical([token], num_classes=vocab_size)[0] for token in seq]
+# print('----------------')
 
 # finalize inputs to the model
 X1_signatures, X2_bodies, y = list(), list(), list()
 for body_idx, seq in enumerate(function_bodies):
 
-  encoded_signature = encode_and_pad(function_signatures[body_idx], max_signature_seq_length)
+  encoded_signature = encode_and_pad(function_signatures[body_idx], max_signature_seq_length, vocab_size)
 
   for i in range(1, len(seq)):
     # add function signature
@@ -112,6 +106,19 @@ decoder_output = Dense(vocab_size, activation='softmax')(decoder)
 
 # compile model
 model = Model(inputs=[x1_input, x2_input], outputs=decoder_output)
-model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-model.fit([X1_signatures, X2_bodies], y, epochs=10, batch_size=64, shuffle=False)
+# callbacks
+filepath="checkpoint-{epoch:02d}-{loss:.4f}.hdf5"
+tensorboard = TensorBoard("./log")
+# checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
+callbacks = [tensorboard]
+
+model.fit([X1_signatures, X2_bodies], y, epochs=n_epochs, batch_size=batch_size, shuffle=False, callbacks=callbacks)
+
+# save model
+model.save('model.h5')
+
+# save tokenizer
+with open('tokenizer.pickle', 'wb') as handle:
+  pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
