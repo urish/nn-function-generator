@@ -32,12 +32,14 @@ interface IFunction {
 const NEW_LINE = '\r\n';
 const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
-const N_OBSERVATIONS = 2;
+const N_OBSERVATIONS = 100;
 const MAX_SIGNATURE_LENGTH = 100;
 const MAX_BODY_LENGTH = 100;
 
-function removeNewlines(body: string) {
-  return body.replace(/\r?\n|\r/g, ' ');
+function cleanBody(body: string) {
+  // remove newlines
+  // convert multiple consecutive spaces into one
+  return body.replace(/\r?\n|\r/g, ' ').replace(/\s\s+/g, ' ');
 }
 
 const spinner = Ora('Creating dataset. Hold tight!');
@@ -59,7 +61,6 @@ inputStream
     const parsedRecord = JSON.parse(entry) as IInputRecord;
     const ast = tsquery.ast(parsedRecord.text);
     const fnNode = tsquery.query<FunctionDeclaration>(ast, 'FunctionDeclaration')[0];
-    const prolog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
     if (!fnNode.body || !fnNode.body.statements.length) {
       // Empty function
@@ -71,7 +72,7 @@ inputStream
       return;
     }
 
-    console.log(prolog.length);
+    const prolog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
     if (prolog.length > MAX_SIGNATURE_LENGTH) {
       // remove very long function signatures
@@ -82,7 +83,7 @@ inputStream
 
     const name = fnNode.name ? fnNode.name.text : ''; // empty = default function
     const args = fnNode.parameters;
-    const body = `${START_SYMBOL} ${removeNewlines(fnNode.body!.getText())} ${END_SYMBOL}`;
+    const body = `${START_SYMBOL} ${cleanBody(fnNode.body!.getText())} ${END_SYMBOL}`;
 
     const tsFunction: IFunction = {
       id: parsedRecord.id,
