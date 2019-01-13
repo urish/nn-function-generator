@@ -42,6 +42,10 @@ function cleanBody(body: string) {
   return body.replace(/\r?\n|\r/g, ' ').replace(/\s\s+/g, ' ');
 }
 
+function addSymbols(data: string) {
+  return `${START_SYMBOL} ${data} ${END_SYMBOL}`;
+}
+
 const spinner = Ora('Creating dataset. Hold tight!');
 const input = createReadStream(join(__dirname, '../data/typescript-all-functions.json.gz')).pipe(createGunzip());
 
@@ -83,7 +87,8 @@ inputStream
 
     const name = fnNode.name ? fnNode.name.text : ''; // empty = default function
     const args = fnNode.parameters;
-    const body = `${START_SYMBOL} ${cleanBody(fnNode.body!.getText())} ${END_SYMBOL}`;
+    const body = addSymbols(cleanBody(fnNode.body!.getText()));
+    const tokens = addSymbols(dumpAstTokens(fnNode.body!));
 
     const tsFunction: IFunction = {
       id: parsedRecord.id,
@@ -94,7 +99,7 @@ inputStream
       argNames: args.map((n) => n.name.getText()),
       prolog,
       body,
-      tokens: dumpAstTokens(fnNode.body!),
+      tokens,
     };
 
     const observation = csvParser.parse(tsFunction) + NEW_LINE;
