@@ -7,6 +7,7 @@ import { createGunzip } from 'zlib';
 import { Parser } from 'json2csv';
 import chalk from 'chalk';
 import * as Ora from 'ora';
+import { dumpAstTokens } from './dump-ast';
 
 interface IInputRecord {
   id: string;
@@ -25,6 +26,7 @@ interface IFunction {
   argNames: Array<string>;
   prolog: string;
   body: string;
+  tokens: string;
 }
 
 const NEW_LINE = '\r\n';
@@ -91,6 +93,7 @@ inputStream
       argNames: args.map((n) => n.name.getText()),
       prolog,
       body,
+      tokens: dumpAstTokens(fnNode.body!),
     };
 
     const observation = csvParser.parse(tsFunction) + NEW_LINE;
