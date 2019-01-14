@@ -13,10 +13,10 @@
     "@phenomnomnominal/tsquery": "^3.0.0",
     "@types/json2csv": "^4.2.0",
     "@types/node": "^10.12.18",
-    "@types/ora": "^3.0.0",
+    "@types/progress": "^2.0.3",
     "chalk": "^2.4.2",
     "json2csv": "^4.3.3",
-    "ora": "^3.0.0",
+    "progress": "^2.0.3",
     "typescript": "^3.2.2"
   },
   "devDependencies": {

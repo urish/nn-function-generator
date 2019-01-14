@@ -6,10 +6,10 @@ import { FunctionDeclaration } from 'typescript';
 import { createGunzip } from 'zlib';
 import { Parser } from 'json2csv';
 import chalk from 'chalk';
-import * as Ora from 'ora';
 import { renameArgs } from './rename-args';
 import { renameIdentifiers } from './rename-identifiers';
 import { spaceTokens } from './space-tokens';
+import * as ProgressBar from 'progress';
 
 interface IInputRecord {
   id: string;
@@ -36,7 +36,7 @@ type Headers = Array<keyof IFunction>;
 const NEW_LINE = '\r\n';
 const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
-const N_OBSERVATIONS = 100;
+const N_OBSERVATIONS = 1000;
 const MAX_SIGNATURE_LENGTH = 100;
 const MAX_BODY_LENGTH = 100;
 
@@ -50,7 +50,7 @@ function addSymbols(data: string) {
   return `${START_SYMBOL} ${data} ${END_SYMBOL}`;
 }
 
-const spinner = Ora('Creating dataset. Hold tight!');
+const progressBar = new ProgressBar('Progress [:bar] :percent | ETA: :etas | :curr/:total', { total: N_OBSERVATIONS });
 const input = createReadStream(join(__dirname, '../data/typescript-all-functions.json.gz')).pipe(createGunzip());
 
 const datasetPath = join(__dirname, '../data/dataset.csv');
@@ -62,7 +62,7 @@ writeFileSync(datasetPath, fields + NEW_LINE, { encoding: 'utf-8' });
 
 const inputStream = createInterface({ input });
 
-spinner.start();
+console.log(chalk.yellow('Creating dataset. Hold tight!'));
 
 inputStream
   .on('line', (entry) => {
@@ -117,11 +117,13 @@ inputStream
 
     appendFileSync(datasetPath, observation, { encoding: 'utf-8' });
 
+    progressBar.tick({ curr: n_functions });
+
     if (n_functions >= N_OBSERVATIONS) {
       inputStream.close();
     }
   })
   .on('close', () => {
-    spinner.succeed(chalk.green('Dataset successfully created.'));
+    console.log(chalk.green('Dataset successfully created.'));
     process.exit(0);
   });
