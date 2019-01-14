@@ -45,3 +45,38 @@ def prepare_dataset(raw_x1, raw_x2, max_seq_len, vocab_size):
 
   x1, x2, y = np.array(x1), np.array(x2), np.array(y)
   return x1, x2, y
+
+"""
+This function can be used to debug the preprocessed dataset and print out
+encoded inputs as well as the label.
+
+Be aware of calling this function on a large dataset as it will produce dozens
+of print statemenets.
+"""
+def check_encoding(x1, x2, y, idx2word):
+  print("--- Check Encoding ---")
+  for idx, x1_one_hot in enumerate(x1):
+    x1_decoded = ""
+    x2_decoded = ""
+    y_decoded = ""
+
+    # decode one hot encoding for x1
+    for x1_encoded in x1_one_hot:
+      x1_argmax = np.argmax(x1_encoded)
+      if x1_argmax != 0:
+        x1_decoded += " " + idx2word[x1_argmax]
+
+    # decode x2
+    for x2_encoded_num in reversed(x2[idx]):
+      if x2_encoded_num != 0:
+        x2_decoded = idx2word[x2_encoded_num] + " " + x2_decoded
+
+    y_encoded = y[idx]
+    y_argmax = np.argmax(y_encoded)
+    if y_argmax != 0:
+      y_decoded = idx2word[y_argmax]
+
+    print("X1", idx, x1_decoded)
+    print("X2", idx, x2_decoded)
+    print("Y", idx, y_decoded)
+    print("---")

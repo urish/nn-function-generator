@@ -14,7 +14,7 @@ from keras.models import Model, Sequential
 from keras.utils import to_categorical
 from keras.layers import Embedding, concatenate, LSTM, Dropout, Input, Reshape, Dense
 from keras.callbacks import ModelCheckpoint, TensorBoard
-from utils import pad_left, prepare_dataset
+from utils import pad_left, prepare_dataset, check_encoding
 from sklearn.model_selection import train_test_split
 
 pp = PrettyPrinter(indent=2)
