@@ -31,6 +31,8 @@ interface IFunction {
   body: string;
 }
 
+type Headers = Array<keyof IFunction>;
+
 const NEW_LINE = '\r\n';
 const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
@@ -55,7 +57,7 @@ const datasetPath = join(__dirname, '../data/dataset.csv');
 const csvParser = new Parser({ header: false });
 let n_functions = 0;
 
-const fields = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'body', 'tokens'];
+const fields: Headers = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'originalBody', 'body'];
 writeFileSync(datasetPath, fields + NEW_LINE, { encoding: 'utf-8' });
 
 const inputStream = createInterface({ input });
