@@ -2,7 +2,11 @@ import numpy as np
 import pandas as pd
 import pickle
 
-from os import listdir, getcwd
+from prettytable import PrettyTable
+from argparse import ArgumentParser
+from datetime import datetime
+from pprint import PrettyPrinter
+from os import path, makedirs, listdir
 from numpy import array
 from keras.preprocessing.text import Tokenizer, one_hot
 from keras.preprocessing.sequence import pad_sequences
@@ -10,15 +14,42 @@ from keras.models import Model, Sequential
 from keras.utils import to_categorical
 from keras.layers import Embedding, concatenate, LSTM, Dropout, Input, Reshape, Dense
 from keras.callbacks import ModelCheckpoint, TensorBoard
-from utils import get_max_seq_length, encode_and_pad
+from utils import get_max_seq_length, encode_and_pad, pad_left
+
+pp = PrettyPrinter(indent=2)
+
+def pprint(obj):
+  pp.pprint(obj)
+
+# --- Command Line Arguments ---
+
+parser = ArgumentParser()
+parser.add_argument("--max-seq-len", nargs='?', type=int, const=True, default=100)
+parser.add_argument("--epochs", nargs='?', type=int, const=True, default=300)
+parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=64)
+parser.add_argument("--name", nargs='?', type=str, const=True)
+
+args = parser.parse_args()
 
 # --- Parameters ---
 
-max_seq_len = 100
-batch_size = 64
-n_epochs = 300
+max_seq_len = args.max_seq_len
+batch_size = args.batch_size
+n_epochs = args.epochs
 
-# ---
+# --- Create Directory ---
+
+out_dir = "./runs"
+n_runs = len(listdir(out_dir)) + 1
+run_name = args.name if args.name else "run_" + pad_left(n_runs)
+run_dir = out_dir + "/" + run_name
+
+if not path.exists(run_dir):
+  makedirs(run_dir)
+else:
+  raise Exception("Cannot create log directory for run. Directory already exists.")
+
+# --- Data Preprocessing ---
 
 tokenizer = Tokenizer(filters='', split=" ", lower=False)
 
@@ -28,7 +59,7 @@ dataset = dataframe.values
 n_observations = dataset.shape[0] - 1
 
 function_signatures = dataset[1:,6]
-function_bodies = dataset[1:,7]
+function_bodies = dataset[1:,8]
 
 # merge function names and their implementation into one array for tokenization
 inputs = np.concatenate((function_signatures, function_bodies), axis=None)
@@ -51,11 +82,6 @@ function_bodies = sequences[n_observations:]
 # signature length is fixed
 max_signature_seq_length = get_max_seq_length(function_signatures, max_seq_len)
 max_body_seq_length = get_max_seq_length(function_bodies, max_seq_len)
-
-# print(function_signatures)
-# print(function_bodies)
-
-# print('----------------')
 
 # finalize inputs to the model
 X1_signatures, X2_bodies, y = list(), list(), list()
@@ -82,9 +108,24 @@ for body_idx, seq in enumerate(function_bodies):
 
 X1_signatures, X2_bodies, y = np.array(X1_signatures), np.array(X2_bodies), np.array(y)
 
-print(X1_signatures.shape)
-print(X2_bodies.shape)
-print(y.shape)
+# --- Information ---
+
+infos = PrettyTable()
+
+infos.field_names = ["Info", "Value"]
+infos.align["Info"] = "l"
+infos.align["Value"] = "l"
+
+infos.add_row(["Epochs", n_epochs])
+infos.add_row(["Batch Size", batch_size])
+infos.add_row(["Max Sequence", max_seq_len])
+infos.add_row(["Observations", max(len(function_signatures), len(function_bodies))])
+infos.add_row(["X1 (Signatures)", X1_signatures.shape])
+infos.add_row(["X2 (Bodies)", X2_bodies.shape])
+infos.add_row(["Y", y.shape])
+infos.add_row(["Vocabulary", vocab_size])
+
+print(infos)
 
 # --- Model ---
 
@@ -109,16 +150,18 @@ model = Model(inputs=[x1_input, x2_input], outputs=decoder_output)
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
 # callbacks
-filepath="checkpoint-{epoch:02d}-{loss:.4f}.hdf5"
-tensorboard = TensorBoard("./log")
-# checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
+tensorboard = TensorBoard(run_dir)
 callbacks = [tensorboard]
 
+# fit the model
+print("Buckle up and hold tight! We are about to start the training...")
 model.fit([X1_signatures, X2_bodies], y, epochs=n_epochs, batch_size=batch_size, shuffle=False, callbacks=callbacks)
 
 # save model
-model.save('model.h5')
+model.save(run_dir + '/model.h5')
+print("Model successfully saved.")
 
 # save tokenizer
 with open('tokenizer.pickle', 'wb') as handle:
   pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+  print("Tokenizer successfully dumped.")

@@ -16,7 +16,7 @@ with open(tokenizer_file, 'rb') as handle:
 
 in_signature = 'function fizzbuzz(num)'
 in_text = 'START'
-max_tokens = 100
+max_tokens = 500
 max_seq_len = 100
 vocab_size = len(tokenizer.word_index) + 1
 

@@ -12,3 +12,6 @@ def encode_and_pad(seq, max_length=None, num_classes=None):
     seq = pad_sequences([seq], maxlen=max_length)[0]
 
   return [to_categorical([token], num_classes=num_classes)[0] for token in seq]
+
+def pad_left(i, width=4):
+  return str(i).zfill(width)
