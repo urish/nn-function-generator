@@ -37,7 +37,7 @@ if not path.exists(tokenizer_file):
 with open(tokenizer_file, 'rb') as handle:
   tokenizer = pickle.load(handle)
 
-in_signature = 'function fizzbuzz(num)'
+in_signature = 'function down ( $arg0$ )'
 in_text = 'START'
 max_tokens = 500
 max_seq_len = 100
@@ -61,10 +61,10 @@ for i in range(max_tokens):
   # map idx to word
   word = idx2word[y_hat]
 
-  if word is None or word == 'END':
-      break
-
   # append as input for generating the next token
   in_text += ' ' + word
+
+  if word is None or word == 'END':
+      break
 
 print(in_text)
