@@ -5,12 +5,35 @@ from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import pickle
 
-model_file = "model.h5"
-assert path.exists(model_file)
+from argparse import ArgumentParser
+
+# --- Command Line Arguments ---
+
+parser = ArgumentParser()
+parser.add_argument("--run", type=str)
+
+args = parser.parse_args()
+
+if not args.run:
+  raise Exception("Please specify a run that you would like to test.")
+
+run_dir = "./runs/" + args.run
+
+if not path.exists(run_dir):
+  raise Exception("'{}' does not exist.".format(args.run))
+
+model_file = run_dir + "/model.h5"
+
+if not path.exists(model_file):
+  raise Exception("Cannot find 'model.h5'.")
+
 model = load_model(model_file)
 
-tokenizer_file = "tokenizer.pickle"
-assert path.exists(tokenizer_file)
+tokenizer_file = run_dir + "/tokenizer.pickle"
+
+if not path.exists(tokenizer_file):
+  raise Exception("Cannot find 'tokenizer.pickle'.")
+
 with open(tokenizer_file, 'rb') as handle:
   tokenizer = pickle.load(handle)
 
