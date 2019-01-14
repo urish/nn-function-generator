@@ -12,7 +12,7 @@ from keras.preprocessing.text import Tokenizer, one_hot
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Model, Sequential
 from keras.utils import to_categorical
-from keras.layers import Embedding, concatenate, LSTM, Dropout, Input, Reshape, Dense
+from keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from utils import pad_left, prepare_dataset, check_encoding
 from sklearn.model_selection import train_test_split
@@ -30,6 +30,7 @@ parser = ArgumentParser()
 parser.add_argument("--max-seq-len", nargs='?', type=int, const=True, default=100)
 parser.add_argument("--epochs", nargs='?', type=int, const=True, default=300)
 parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=64)
+parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.6)
 parser.add_argument("--name", nargs='?', type=str, const=True)
 parser.add_argument("--dry-run", nargs='?', type=boolean, const=True, default=False)
 
@@ -45,6 +46,7 @@ if dry_run:
 max_seq_len = args.max_seq_len
 batch_size = args.batch_size
 n_epochs = args.epochs
+dropout = args.dropout
 
 # --- Create Directory ---
 
@@ -112,6 +114,7 @@ infos.align["Value"] = "l"
 
 infos.add_row(["Epochs", n_epochs])
 infos.add_row(["Batch Size", batch_size])
+infos.add_row(["Dropout", dropout])
 infos.add_row(["Max Sequence", max_seq_len])
 infos.add_row(["Test Size", test_size])
 infos.add_row(["Observations (Train)", max(len(x1_train), len(x2_train))])
@@ -127,18 +130,23 @@ print(infos)
 
 # encoder
 x1_input = Input(shape=x1_train[0].shape, name="x1_input")
-x1_model = LSTM(256, return_sequences=True, name="x1_lstm_1")(x1_input)
-x1_model = Dense(128, activation='relu')(x1_model)
+x1_model = LSTM(128, return_sequences=True, dropout=dropout, name="x1_lstm_1")(x1_input)
+x1_model = BatchNormalization()(x1_model)
+x1_model = Dense(64, activation='relu')(x1_model)
 
 x2_input = Input(shape=x2_train[0].shape, name="x2_input")
-x2_model = Embedding(vocab_size, 200, input_length=max_seq_len)(x2_input)
-x2_model = LSTM(256, return_sequences=True, name="x2_lstm_1")(x2_model)
-x2_model = LSTM(256, return_sequences=True, name="x2_lstm_2")(x2_model)
-x2_model = Dense(128, activation='relu')(x2_model)
+x2_model = Embedding(vocab_size, 100, input_length=max_seq_len)(x2_input)
+x2_model = Dropout(dropout)(x2_model)
+x2_model = LSTM(128, return_sequences=True, dropout=dropout, name="x2_lstm_1")(x2_model)
+x2_model = BatchNormalization()(x2_model)
+x2_model = LSTM(128, return_sequences=True, dropout=dropout, name="x2_lstm_2")(x2_model)
+x2_model = BatchNormalization()(x2_model)
+x2_model = Dense(64, activation='relu')(x2_model)
 
 # decoder
 decoder = concatenate([x1_model, x2_model])
-decoder = LSTM(512, return_sequences=False, name="decoder_lstm")(decoder)
+decoder = LSTM(256, return_sequences=False, dropout=dropout, name="decoder_lstm")(decoder)
+decoder = BatchNormalization()(decoder)
 decoder_output = Dense(vocab_size, activation='softmax')(decoder)
 
 # compile model
