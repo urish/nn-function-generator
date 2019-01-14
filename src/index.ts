@@ -7,7 +7,6 @@ import { createGunzip } from 'zlib';
 import { Parser } from 'json2csv';
 import chalk from 'chalk';
 import * as Ora from 'ora';
-import { dumpAstTokens } from './dump-ast';
 import { renameArgs } from './rename-args';
 import { renameIdentifiers } from './rename-identifiers';
 import { spaceTokens } from './space-tokens';
@@ -30,7 +29,6 @@ interface IFunction {
   prolog: string;
   originalBody: string;
   body: string;
-  tokens: string;
 }
 
 const NEW_LINE = '\r\n';
@@ -96,7 +94,6 @@ inputStream
     const args = fnNode.parameters;
     const originalBody = addSymbols(cleanBody(fnNode.body!.getText()));
     const body = addSymbols(cleanBody(cleanFnNode.body!.getText()));
-    const tokens = addSymbols(dumpAstTokens(fnNode.body!));
 
     const tsFunction: IFunction = {
       id: parsedRecord.id,
@@ -108,7 +105,6 @@ inputStream
       prolog,
       originalBody,
       body,
-      tokens,
     };
 
     const observation = csvParser.parse(tsFunction) + NEW_LINE;
