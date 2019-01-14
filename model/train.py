@@ -40,6 +40,10 @@ n_epochs = args.epochs
 # --- Create Directory ---
 
 out_dir = "./runs"
+
+if not path.exists(out_dir):
+  makedirs(out_dir)
+
 n_runs = len(listdir(out_dir)) + 1
 run_name = args.name if args.name else "run_" + pad_left(n_runs)
 run_dir = out_dir + "/" + run_name
