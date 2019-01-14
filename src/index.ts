@@ -78,15 +78,19 @@ inputStream
       return;
     }
 
-    const prolog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
+    const origProlog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
-    if (prolog.length > MAX_SIGNATURE_LENGTH) {
+    if (origProlog.length > MAX_SIGNATURE_LENGTH) {
       // remove very long function signatures
       return;
     }
 
     const cleanAst = tsquery.ast(spaceTokens(tsquery.ast(renameIdentifiers(tsquery.ast(renameArgs(ast))))));
     const cleanFnNode = tsquery.query<FunctionDeclaration>(cleanAst, 'FunctionDeclaration')[0];
+    const prolog = cleanAst
+      .getFullText()
+      .substr(0, cleanFnNode.body!.getStart())
+      .trim();
 
     n_functions++;
 
