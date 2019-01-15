@@ -28,7 +28,7 @@ boolean = lambda x: (str(x).lower() == 'true')
 
 parser = ArgumentParser()
 parser.add_argument("--max-seq-len", nargs='?', type=int, const=True, default=100)
-parser.add_argument("--epochs", nargs='?', type=int, const=True, default=300)
+parser.add_argument("--epochs", nargs='?', type=int, const=True, default=100)
 parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=64)
 parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.6)
 parser.add_argument("--name", nargs='?', type=str, const=True)
@@ -74,8 +74,8 @@ dataset = dataframe.values
 
 n_observations = dataset.shape[0] - 1
 
-function_signatures = dataset[1:,6]
-function_bodies = dataset[1:,8]
+function_signatures = dataset[1:,7]
+function_bodies = dataset[1:,9]
 
 # merge function names and their implementation into one array for tokenization
 inputs = np.concatenate((function_signatures, function_bodies), axis=None)
@@ -117,6 +117,7 @@ infos.add_row(["Batch Size", batch_size])
 infos.add_row(["Dropout", dropout])
 infos.add_row(["Max Sequence", max_seq_len])
 infos.add_row(["Test Size", test_size])
+infos.add_row(["Observations (Raw)", max(len(function_signatures), len(function_bodies))])
 infos.add_row(["Observations (Train)", max(len(x1_train), len(x2_train))])
 infos.add_row(["Observations (Test)", max(len(x1_test), len(x2_test))])
 infos.add_row(["X1 (Signatures)", x1_train.shape])
@@ -130,23 +131,18 @@ print(infos)
 
 # encoder
 x1_input = Input(shape=x1_train[0].shape, name="x1_input")
-x1_model = LSTM(128, return_sequences=True, dropout=dropout, name="x1_lstm_1")(x1_input)
-x1_model = BatchNormalization()(x1_model)
-x1_model = Dense(64, activation='relu')(x1_model)
+x1_model = LSTM(256, return_sequences=True, name="x1_lstm_1")(x1_input)
+x1_model = Dense(128, activation="relu")(x1_model)
 
 x2_input = Input(shape=x2_train[0].shape, name="x2_input")
-x2_model = Embedding(vocab_size, 100, input_length=max_seq_len)(x2_input)
-x2_model = Dropout(dropout)(x2_model)
-x2_model = LSTM(128, return_sequences=True, dropout=dropout, name="x2_lstm_1")(x2_model)
-x2_model = BatchNormalization()(x2_model)
-x2_model = LSTM(128, return_sequences=True, dropout=dropout, name="x2_lstm_2")(x2_model)
-x2_model = BatchNormalization()(x2_model)
-x2_model = Dense(64, activation='relu')(x2_model)
+x2_model = Embedding(vocab_size, 200, input_length=max_seq_len)(x2_input)
+x2_model = LSTM(256, return_sequences=True, name="x2_lstm_1")(x2_model)
+x2_model = LSTM(256, return_sequences=True, name="x2_lstm_2")(x2_model)
+x2_model = Dense(128, activation="relu")(x2_model)
 
 # decoder
 decoder = concatenate([x1_model, x2_model])
-decoder = LSTM(256, return_sequences=False, dropout=dropout, name="decoder_lstm")(decoder)
-decoder = BatchNormalization()(decoder)
+decoder = LSTM(512, return_sequences=False, name="decoder_lstm")(decoder)
 decoder_output = Dense(vocab_size, activation='softmax')(decoder)
 
 # compile model

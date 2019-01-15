@@ -62,9 +62,9 @@ for i in range(max_tokens):
   word = idx2word[y_hat]
 
   # append as input for generating the next token
-  in_text += ' ' + word
+  in_text += " " + word
 
-  if word is None or word == 'END':
+  if word is None or word == "END":
       break
 
 print(in_text)
