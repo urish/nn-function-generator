@@ -27,6 +27,7 @@ interface IFunction {
   argCount: number;
   argNames: Array<string>;
   prolog: string;
+  originalProlog: string;
   originalBody: string;
   body: string;
 }
@@ -57,7 +58,19 @@ const datasetPath = join(__dirname, '../data/dataset.csv');
 const csvParser = new Parser({ header: false });
 let n_functions = 0;
 
-const fields: Headers = ['id', 'line', 'character', 'name', 'argCount', 'argNames', 'prolog', 'originalBody', 'body'];
+const fields: Headers = [
+  'id',
+  'line',
+  'character',
+  'name',
+  'argCount',
+  'argNames',
+  'originalProlog',
+  'prolog',
+  'originalBody',
+  'body',
+];
+
 writeFileSync(datasetPath, fields + NEW_LINE, { encoding: 'utf-8' });
 
 const inputStream = createInterface({ input });
@@ -80,9 +93,9 @@ inputStream
       return;
     }
 
-    const origProlog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
+    const originalProlog = parsedRecord.text.substr(0, fnNode.body!.getStart()).trim();
 
-    if (origProlog.length > MAX_SIGNATURE_LENGTH) {
+    if (originalProlog.length > MAX_SIGNATURE_LENGTH) {
       // remove very long function signatures
       return;
     }
@@ -108,6 +121,7 @@ inputStream
       name,
       argCount: args.length,
       argNames: args.map((n) => n.name.getText()),
+      originalProlog,
       prolog,
       originalBody,
       body,
