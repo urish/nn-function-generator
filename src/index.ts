@@ -30,6 +30,7 @@ interface IFunction {
   originalProlog: string;
   originalBody: string;
   body: string;
+  identifiers: Array<string>;
 }
 
 type Headers = Array<keyof IFunction>;
@@ -100,7 +101,8 @@ inputStream
       return;
     }
 
-    const cleanAst = tsquery.ast(spaceTokens(tsquery.ast(renameIdentifiers(tsquery.ast(renameArgs(ast))))));
+    const { result, identifiers } = renameIdentifiers(tsquery.ast(renameArgs(ast)));
+    const cleanAst = tsquery.ast(spaceTokens(tsquery.ast(result)));
     const cleanFnNode = tsquery.query<FunctionDeclaration>(cleanAst, 'FunctionDeclaration')[0];
     const prolog = cleanAst
       .getFullText()
@@ -125,6 +127,7 @@ inputStream
       prolog,
       originalBody,
       body,
+      identifiers,
     };
 
     const observation = csvParser.parse(tsFunction) + NEW_LINE;

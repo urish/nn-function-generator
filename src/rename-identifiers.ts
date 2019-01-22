@@ -59,5 +59,13 @@ export function renameIdentifiers(ast: SourceFile) {
     });
   }
 
-  return applyEdits(ast.getFullText(), renameList);
+  const identifiers: string[] = [];
+  for (const key of Object.keys(identifierMap)) {
+    identifiers[identifierMap[key]] = key;
+  }
+
+  return {
+    result: applyEdits(ast.getFullText(), renameList),
+    identifiers,
+  };
 }
