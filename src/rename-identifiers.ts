@@ -13,7 +13,7 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import { IEditEntry, applyEdits } from './rename-utils';
 import { syntaxKindName } from '@phenomnomnominal/tsquery/dist/src/syntax-kind';
 
-const renameTokens = [
+export const renameTokens = [
   SyntaxKind.Identifier,
   SyntaxKind.StringLiteral,
   SyntaxKind.NumericLiteral,
