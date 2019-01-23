@@ -18,6 +18,7 @@ describe('rename-identifiers', () => {
       }
     `,
       identifiers: ['console', 'log', 'window', 'location', 'name'],
+      types: ['identifier', 'identifier', 'identifier', 'identifier', 'identifier'],
     });
   });
 
@@ -35,23 +36,25 @@ describe('rename-identifiers', () => {
       }
     `,
       identifiers: ['console', 'log', 'hello', 'world', 'more'],
+      types: ['identifier', 'identifier', 'string', 'string', 'string'],
     });
   });
 
   it('should rename all the numeric literals in the given code', () => {
     const ast = tsquery.ast(`
       function f($arg0$, $arg1$) {
-        console.log(10, 0x20, 080, 0b1111);
+        console.log(10, 0x20, 080, 0b1111, '10');
       }
     `);
 
     expect(renameIdentifiers(ast)).toEqual({
       result: `
       function f($arg0$, $arg1$) {
-        id0.id1(2, 3, 4, 5);
+        id0.id1(2, 3, 4, 5, '2');
       }
     `,
       identifiers: ['console', 'log', '10', '32', '80', '15'],
+      types: ['identifier', 'identifier', 'number', 'number', 'number', 'number'],
     });
   });
 });

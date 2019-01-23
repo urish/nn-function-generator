@@ -56,6 +56,7 @@ const progressBar = new ProgressBar('Progress [:bar] :percent | ETA: :etas | :cu
 const input = createReadStream(join(__dirname, '../data/typescript-all-functions.json.gz')).pipe(createGunzip());
 
 const datasetPath = join(__dirname, '../data/dataset.csv');
+const identifiersPath = join(__dirname, '../data/identifiers.json');
 const csvParser = new Parser({ header: false });
 let n_functions = 0;
 
@@ -75,6 +76,7 @@ const fields: Headers = [
 writeFileSync(datasetPath, fields + NEW_LINE, { encoding: 'utf-8' });
 
 const inputStream = createInterface({ input });
+const allIdentifiers = new Set<string>();
 
 console.log(chalk.yellow('Creating dataset. Hold tight!'));
 
@@ -132,7 +134,12 @@ inputStream
 
     const observation = csvParser.parse(tsFunction) + NEW_LINE;
 
+    for (const identifier of identifiers) {
+      allIdentifiers.add(identifier);
+    }
+
     appendFileSync(datasetPath, observation, { encoding: 'utf-8' });
+    writeFileSync(identifiersPath, JSON.stringify(Array.from(allIdentifiers)));
 
     progressBar.tick({ curr: n_functions });
 

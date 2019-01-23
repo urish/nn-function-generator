@@ -5,7 +5,7 @@ Experimenting with automatic generation of TS function bodies using ANN models
 ## Setup
 
 1. Download `typescript-all-functions.json.gz` and put it inside the `data` directory
-2. Run `yarn prepare` to prepare the dataset for training
+2. Run `yarn dataset` to prepare the dataset for training
 3. Run `cd model && python train.py` to train the model
 
 ## Running the playground
