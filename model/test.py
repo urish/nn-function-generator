@@ -37,34 +37,37 @@ if not path.exists(tokenizer_file):
 with open(tokenizer_file, 'rb') as handle:
   tokenizer = pickle.load(handle)
 
-in_signature = 'function down ( $arg0$ )'
-in_text = 'START'
-max_tokens = 500
-max_seq_len = 100
-vocab_size = len(tokenizer.word_index) + 1
+def predict(in_signature):
+  in_text = 'START'
+  max_tokens = 500
+  max_seq_len = 100
 
-signature_seq = tokenizer.texts_to_sequences([in_signature])[0][-max_seq_len:]
-signature_seq = encode_and_pad(signature_seq, max_seq_len, vocab_size)
-signature_seq = np.array([signature_seq])
+  vocab_size = len(tokenizer.word_index) + 1
 
-idx2word = {v: k for k, v in tokenizer.word_index.items()}
+  signature_seq = tokenizer.texts_to_sequences([in_signature])[0][-max_seq_len:]
+  signature_seq = encode_and_pad(signature_seq, max_seq_len, vocab_size)
+  signature_seq = np.array([signature_seq])
 
-for i in range(max_tokens):
-  body_seq = tokenizer.texts_to_sequences([in_text])[0][-max_seq_len:]
-  body_seq = pad_sequences([body_seq], maxlen=max_seq_len)
-  body_seq = np.array(body_seq)
+  idx2word = {v: k for k, v in tokenizer.word_index.items()}
 
-  # predict next token
-  y_hat = model.predict([signature_seq,body_seq], verbose=0)
-  y_hat = np.argmax(y_hat)
+  for i in range(max_tokens):
+    body_seq = tokenizer.texts_to_sequences([in_text])[0][-max_seq_len:]
+    body_seq = pad_sequences([body_seq], maxlen=max_seq_len)
+    body_seq = np.array(body_seq)
 
-  # map idx to word
-  word = idx2word[y_hat]
+    # predict next token
+    y_hat = model.predict([signature_seq,body_seq], verbose=0)
+    y_hat = np.argmax(y_hat)
 
-  # append as input for generating the next token
-  in_text += " " + word
+    # map idx to word
+    word = idx2word[y_hat]
 
-  if word is None or word == "END":
-      break
+    # append as input for generating the next token
+    in_text += " " + word
 
-print(in_text)
+    if word is None or word == "END":
+        break
+  return in_text
+
+if __name__ == "__main__":
+  print(predict("function add ( $arg0$, $arg1$: number )"))

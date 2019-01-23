@@ -6,24 +6,32 @@
   "author": "Uri Shaked <uri@urishaked.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index",
+    "dataset": "ts-node src/index",
+    "start": "ts-node-dev src/function-server",
     "test": "jest"
   },
   "dependencies": {
     "@phenomnomnominal/tsquery": "^3.0.0",
+    "@types/axios": "^0.14.0",
     "@types/json2csv": "^4.2.0",
     "@types/node": "^10.12.18",
+    "@types/prettier": "^1.15.2",
     "@types/progress": "^2.0.3",
+    "axios": "^0.18.0",
     "chalk": "^2.4.2",
+    "express": "^4.16.4",
     "json2csv": "^4.3.3",
+    "prettier": "^1.16.1",
     "progress": "^2.0.3",
     "typescript": "^3.2.2"
   },
   "devDependencies": {
+    "@types/express": "^4.16.1",
     "@types/jest": "^23.3.12",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
-    "ts-node": "^7.0.1"
+    "ts-node": "^7.0.1",
+    "ts-node-dev": "^1.0.0-pre.32"
   },
   "jest": {
     "moduleFileExtensions": [
