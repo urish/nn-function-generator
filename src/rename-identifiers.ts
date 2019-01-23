@@ -68,7 +68,7 @@ export function renameIdentifiers(ast: SourceFile) {
     if (identifierMap[text] == null) {
       identifierMap[text] = cnt++;
     }
-    identifierTypes[text] = getType(node, identifierTypes[text]);
+    identifierTypes[identifierMap[text]] = getType(node, identifierTypes[identifierMap[text]]);
     renameList.push({
       start: node.getStart(),
       end: node.getEnd(),
@@ -80,7 +80,7 @@ export function renameIdentifiers(ast: SourceFile) {
   const types: string[] = [];
   for (const key of Object.keys(identifierMap)) {
     identifiers[identifierMap[key]] = key;
-    types[identifierMap[key]] = identifierTypes[key];
+    types[identifierMap[key]] = identifierTypes[identifierMap[key]];
   }
 
   return {

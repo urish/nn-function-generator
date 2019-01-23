@@ -51,10 +51,10 @@ app.get('/predict', async (req, res) => {
     const { normalizedSignature, argNames } = normalizeSignature(signature);
     const resp = await axios.get('http://localhost:5000/', { params: { signature: normalizedSignature } });
     const abstractResult = resp.data.replace(/^START /, normalizedSignature).replace(/ END$/, '');
-    const { types } = renameIdentifiers(tsquery.ast(abstractResult));
+    const { types, result: renameIdentifiersResult } = renameIdentifiers(tsquery.ast(abstractResult));
     const identifiers = types.map(pickIdentifier);
     const result = tryFormat(
-      renameArgs(tsquery.ast(restoreIdentifiers(tsquery.ast(abstractResult), identifiers)), argNames),
+      renameArgs(tsquery.ast(restoreIdentifiers(tsquery.ast(renameIdentifiersResult), identifiers)), argNames),
     );
     res.send({ result: result });
   } catch (err) {
