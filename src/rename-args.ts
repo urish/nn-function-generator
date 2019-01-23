@@ -29,7 +29,7 @@ export function createProgram(sourceFile: ts.SourceFile, filename: string) {
   return ts.createProgram([filename], compilerOptions, host);
 }
 
-export function renameArgs(ast: ts.SourceFile) {
+export function renameArgs(ast: ts.SourceFile, argNames: string[] | null = null) {
   const program = createProgram(ast, 'input.ts');
   const typeChecker = program.getTypeChecker();
   const fnNode = tsquery.query<ts.FunctionDeclaration>(ast, 'FunctionDeclaration')[0];
@@ -47,7 +47,7 @@ export function renameArgs(ast: ts.SourceFile) {
         renameList.push({
           start: identifier.getStart(),
           end: identifier.getEnd(),
-          newText: `$arg${argIndex}$`,
+          newText: argNames ? argNames[argIndex] : `$arg${argIndex}$`,
         });
       }
     }
