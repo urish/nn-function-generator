@@ -6,3 +6,6 @@ runs
 __pycache__
 *.h5
 *.pickle
+.DS_Store
+typescript-all-functions.json.gz
+identifiers.json

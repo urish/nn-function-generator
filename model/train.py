@@ -28,9 +28,10 @@ boolean = lambda x: (str(x).lower() == 'true')
 
 parser = ArgumentParser()
 parser.add_argument("--max-seq-len", nargs='?', type=int, const=True, default=100)
-parser.add_argument("--epochs", nargs='?', type=int, const=True, default=100)
-parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=64)
-parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.6)
+parser.add_argument("--epochs", nargs='?', type=int, const=True, default=300)
+parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=256)
+parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.4)
+parser.add_argument("--recurrent-dropout", nargs='?', type=int, const=True, default=0.2)
 parser.add_argument("--name", nargs='?', type=str, const=True)
 parser.add_argument("--dry-run", nargs='?', type=boolean, const=True, default=False)
 
@@ -47,6 +48,7 @@ max_seq_len = args.max_seq_len
 batch_size = args.batch_size
 n_epochs = args.epochs
 dropout = args.dropout
+recurrent_dropout = args.recurrent_dropout
 
 # --- Create Directory ---
 
@@ -69,13 +71,13 @@ if not dry_run:
 
 tokenizer = Tokenizer(filters='', split=" ", lower=False)
 
-dataframe = pd.read_csv('../data/dataset.csv', engine='python', header=None)
+dataframe = pd.read_csv('../data/dataset.csv', engine='python')
 dataset = dataframe.values
 
-n_observations = dataset.shape[0] - 1
+n_observations = dataset.shape[0]
 
-function_signatures = dataset[1:,7]
-function_bodies = dataset[1:,9]
+function_signatures = dataframe[['prolog']].values
+function_bodies = dataframe[['body']].values
 
 # merge function names and their implementation into one array for tokenization
 inputs = np.concatenate((function_signatures, function_bodies), axis=None)
@@ -115,6 +117,7 @@ infos.align["Value"] = "l"
 infos.add_row(["Epochs", n_epochs])
 infos.add_row(["Batch Size", batch_size])
 infos.add_row(["Dropout", dropout])
+infos.add_row(["Recurrent Dropout", recurrent_dropout])
 infos.add_row(["Max Sequence", max_seq_len])
 infos.add_row(["Test Size", test_size])
 infos.add_row(["Observations (Raw)", max(len(function_signatures), len(function_bodies))])
@@ -132,14 +135,16 @@ print(infos)
 # encoder
 x1_input = Input(shape=x1_train[0].shape, name="x1_input")
 x1_model = Embedding(vocab_size, 100, input_length=max_seq_len)(x1_input)
-x1_model = LSTM(256, return_sequences=True, name="x1_lstm_1")(x1_model)
+x1_model = LSTM(256, return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout, name="x1_lstm_1")(x1_model)
+x1_model = BatchNormalization()(x1_model)
 x1_model = Dense(128, activation="relu")(x1_model)
 
 x2_input = Input(shape=x2_train[0].shape, name="x2_input")
 x2_model = Embedding(vocab_size, 200, input_length=max_seq_len)(x2_input)
-x2_model = LSTM(256, return_sequences=True, name="x2_lstm_1")(x2_model)
-x2_model = LSTM(256, return_sequences=True, name="x2_lstm_2")(x2_model)
-x2_model = Dense(128, activation="relu")(x2_model)
+x2_model = LSTM(256, return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout, name="x2_lstm_1")(x2_model)
+x2_model = LSTM(256, return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout, name="x2_lstm_2")(x2_model)
+x2_model = BatchNormalization()(x2_model)
+x2_model = TimeDistributed(Dense(128, activation="relu"))(x2_model)
 
 # decoder
 decoder = concatenate([x1_model, x2_model])
