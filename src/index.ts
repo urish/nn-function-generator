@@ -40,7 +40,7 @@ const START_SYMBOL = 'START';
 const END_SYMBOL = 'END';
 const N_OBSERVATIONS = 1000;
 const MAX_SIGNATURE_LENGTH = 100;
-const MAX_BODY_LENGTH = 100;
+const MAX_BODY_LENGTH = 300;
 
 function cleanBody(body: string) {
   // remove newlines

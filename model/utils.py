@@ -24,11 +24,11 @@ def prepare_dataset(raw_x1, raw_x2, max_seq_len, vocab_size):
   x1, x2, y = list(), list(), list()
   for x2_idx, seq in enumerate(raw_x2):
 
-    x1_encoded = encode_and_pad(raw_x1[x2_idx], max_x1_seq_length, vocab_size)
+    x1_encoded = pad_sequences([raw_x1[x2_idx]], maxlen=max_x2_seq_length)[0]
 
     for i in range(1, len(seq)):
       # add function signature
-      x1.append(x1_encoded)
+      x1.append(x1_encoded[-max_seq_len:])
 
       # add the entire sequence to the input and only keep the next word for the output
       in_seq, out_seq = seq[:i], seq[i]

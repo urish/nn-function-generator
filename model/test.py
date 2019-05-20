@@ -45,8 +45,8 @@ def predict(in_signature):
   vocab_size = len(tokenizer.word_index) + 1
 
   signature_seq = tokenizer.texts_to_sequences([in_signature])[0][-max_seq_len:]
-  signature_seq = encode_and_pad(signature_seq, max_seq_len, vocab_size)
-  signature_seq = np.array([signature_seq])
+  signature_seq = pad_sequences([signature_seq], maxlen=max_seq_len)
+  signature_seq = np.array(signature_seq)
 
   idx2word = {v: k for k, v in tokenizer.word_index.items()}
 
@@ -67,7 +67,8 @@ def predict(in_signature):
 
     if word is None or word == "END":
         break
+
   return in_text
 
 if __name__ == "__main__":
-  print(predict("function add ( $arg0$, $arg1$: number )"))
+  print(predict("function add ( $arg0$ : number , $arg1$ : number )"))

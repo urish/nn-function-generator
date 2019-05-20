@@ -131,7 +131,8 @@ print(infos)
 
 # encoder
 x1_input = Input(shape=x1_train[0].shape, name="x1_input")
-x1_model = LSTM(256, return_sequences=True, name="x1_lstm_1")(x1_input)
+x1_model = Embedding(vocab_size, 100, input_length=max_seq_len)(x1_input)
+x1_model = LSTM(256, return_sequences=True, name="x1_lstm_1")(x1_model)
 x1_model = Dense(128, activation="relu")(x1_model)
 
 x2_input = Input(shape=x2_train[0].shape, name="x2_input")
