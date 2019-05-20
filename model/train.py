@@ -162,7 +162,7 @@ if args.tpu:
   tpu_worker = 'grpc://' + args.tpu
   model = tf.contrib.tpu.keras_to_tpu_model(
     model, strategy=tf.contrib.tpu.TPUDistributionStrategy(
-          tf.contrib.cluster_resolver.TPUClusterResolver(tpu_worker)))
+      tf.contrib.cluster_resolver.TPUClusterResolver(tpu_worker)))
 
 if not dry_run:
   # set up callbacks

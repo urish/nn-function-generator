@@ -1,6 +1,6 @@
 import numpy as np
-from keras.utils import to_categorical
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 def get_max_seq_length(seqs, max_seq_len=None):
   length = max(len(s) for s in seqs)
