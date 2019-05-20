@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
+import os
 import pickle
+import tensorflow as tf
 
 from prettytable import PrettyTable
 from argparse import ArgumentParser
@@ -10,10 +12,10 @@ from os import path, makedirs, listdir
 from numpy import array
 from keras.preprocessing.text import Tokenizer, one_hot
 from keras.preprocessing.sequence import pad_sequences
-from keras.models import Model, Sequential
+from tensorflow.keras.models import Model, Sequential
 from keras.utils import to_categorical
-from keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense, TimeDistributed
-from keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense, TimeDistributed
+from tensorflow.python.keras.callbacks import ModelCheckpoint, TensorBoard
 from utils import pad_left, prepare_dataset, check_encoding
 from sklearn.model_selection import train_test_split
 
@@ -34,6 +36,7 @@ parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.4)
 parser.add_argument("--recurrent-dropout", nargs='?', type=int, const=True, default=0.2)
 parser.add_argument("--name", nargs='?', type=str, const=True)
 parser.add_argument("--dry-run", nargs='?', type=boolean, const=True, default=False)
+parser.add_argument("--tpu", nargs='?', type=str, const=True)
 
 args = parser.parse_args()
 
@@ -154,6 +157,12 @@ decoder_output = Dense(vocab_size, activation='softmax')(decoder)
 # compile model
 model = Model(inputs=[x1_input, x2_input], outputs=decoder_output)
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+
+if args.tpu:
+  tpu_worker = 'grpc://' + args.tpu
+  model = tf.contrib.tpu.keras_to_tpu_model(
+    model, strategy=tf.contrib.tpu.TPUDistributionStrategy(
+          tf.contrib.cluster_resolver.TPUClusterResolver(tpu_worker)))
 
 if not dry_run:
   # set up callbacks
