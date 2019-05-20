@@ -36,7 +36,7 @@ parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.4)
 parser.add_argument("--recurrent-dropout", nargs='?', type=int, const=True, default=0.2)
 parser.add_argument("--name", nargs='?', type=str, const=True)
 parser.add_argument("--dry-run", nargs='?', type=boolean, const=True, default=False)
-parser.add_argument("--tpu", nargs='?', type=str, const=True)
+parser.add_argument("--tpu", nargs='?', type=boolean, const=True, default=False)
 
 args = parser.parse_args()
 
@@ -159,10 +159,9 @@ model = Model(inputs=[x1_input, x2_input], outputs=decoder_output)
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
 if args.tpu:
-  tpu_worker = 'grpc://' + args.tpu
   model = tf.contrib.tpu.keras_to_tpu_model(
     model, strategy=tf.contrib.tpu.TPUDistributionStrategy(
-      tf.contrib.cluster_resolver.TPUClusterResolver(tpu_worker)))
+      tf.contrib.cluster_resolver.TPUClusterResolver()))
 
 if not dry_run:
   # set up callbacks
