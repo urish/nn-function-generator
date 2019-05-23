@@ -28,6 +28,7 @@ if not path.exists(model_file):
   raise Exception("Cannot find 'model.h5'.")
 
 model = load_model(model_file)
+print("Model '{}' loaded.".format(model_file))
 
 tokenizer_file = run_dir + "/tokenizer.pickle"
 
@@ -36,6 +37,7 @@ if not path.exists(tokenizer_file):
 
 with open(tokenizer_file, 'rb') as handle:
   tokenizer = pickle.load(handle)
+  print("Tokenizer loaded.")
 
 def predict(in_signature):
   in_text = 'START'

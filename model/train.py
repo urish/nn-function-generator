@@ -9,13 +9,14 @@ from argparse import ArgumentParser
 from datetime import datetime
 from pprint import PrettyPrinter
 from os import path, makedirs, listdir
+from os.path import join
 from numpy import array
-from tensorflow.keras.preprocessing.text import Tokenizer, one_hot
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense, TimeDistributed
-from tensorflow.python.keras.callbacks import ModelCheckpoint, TensorBoard
+from keras.preprocessing.text import Tokenizer, one_hot
+from keras.preprocessing.sequence import pad_sequences
+from keras.models import Model, Sequential
+from keras.utils import to_categorical
+from keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense, TimeDistributed
+from keras.callbacks import ModelCheckpoint, TensorBoard
 from utils import pad_left, prepare_dataset, check_encoding
 from sklearn.model_selection import train_test_split
 
@@ -30,8 +31,8 @@ boolean = lambda x: (str(x).lower() == 'true')
 
 parser = ArgumentParser()
 parser.add_argument("--max-seq-len", nargs='?', type=int, const=True, default=100)
-parser.add_argument("--epochs", nargs='?', type=int, const=True, default=300)
-parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=256)
+parser.add_argument("--epochs", nargs='?', type=int, const=True, default=200)
+parser.add_argument("--batch-size", nargs='?', type=int, const=True, default=512)
 parser.add_argument("--dropout", nargs='?', type=int, const=True, default=0.4)
 parser.add_argument("--recurrent-dropout", nargs='?', type=int, const=True, default=0.2)
 parser.add_argument("--name", nargs='?', type=str, const=True)
@@ -109,6 +110,10 @@ x1_train, x1_test, x2_train, x2_test = train_test_split(function_signatures, fun
 x1_train, x2_train, y_train = prepare_dataset(x1_train, x2_train, max_seq_len, vocab_size)
 x1_test, x2_test, y_test = prepare_dataset(x1_test, x2_test, max_seq_len, vocab_size)
 
+with open(join(run_dir, 'metadata.tsv'), 'w') as f:
+    y_decoded = [idx2word[np.argmax(encoded)]  for encoded in y_test]
+    np.savetxt(f, y_decoded, fmt='%s')
+
 # --- Information ---
 
 infos = PrettyTable()
@@ -140,14 +145,14 @@ x1_input = Input(shape=x1_train[0].shape, name="x1_input")
 x1_model = Embedding(vocab_size, 100, input_length=max_seq_len)(x1_input)
 x1_model = LSTM(256, return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout, name="x1_lstm_1")(x1_model)
 x1_model = BatchNormalization()(x1_model)
-x1_model = Dense(128, activation="relu")(x1_model)
+x1_model = Dense(128, activation="relu", name="x1_out_hidden")(x1_model)
 
 x2_input = Input(shape=x2_train[0].shape, name="x2_input")
 x2_model = Embedding(vocab_size, 200, input_length=max_seq_len)(x2_input)
 x2_model = LSTM(256, return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout, name="x2_lstm_1")(x2_model)
 x2_model = LSTM(256, return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout, name="x2_lstm_2")(x2_model)
 x2_model = BatchNormalization()(x2_model)
-x2_model = TimeDistributed(Dense(128, activation="relu"))(x2_model)
+x2_model = Dense(128, activation="relu", name="x2_out_hidden")(x2_model)
 
 # decoder
 decoder = concatenate([x1_model, x2_model])
@@ -165,7 +170,13 @@ if args.tpu:
 
 if not dry_run:
   # set up callbacks
-  tensorboard = TensorBoard(run_dir)
+  tensorboard = TensorBoard(log_dir=run_dir,
+    batch_size=batch_size,
+    embeddings_freq=1,
+    embeddings_layer_names=['x1_out_hidden', 'x2_out_hidden'],
+    embeddings_metadata='metadata.tsv',
+    embeddings_data=[x1_test, x2_test])
+
   callbacks = [tensorboard]
 
   # fit the model
