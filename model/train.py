@@ -11,12 +11,12 @@ from pprint import PrettyPrinter
 from os import path, makedirs, listdir
 from os.path import join
 from numpy import array
-from keras.preprocessing.text import Tokenizer, one_hot
-from keras.preprocessing.sequence import pad_sequences
-from keras.models import Model, Sequential
-from keras.utils import to_categorical
-from keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense, TimeDistributed
-from keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.preprocessing.text import Tokenizer, one_hot
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.layers import Embedding, concatenate, LSTM, BatchNormalization, Dropout, Input, Reshape, Dense, TimeDistributed
+from tensorflow.python.keras.callbacks import ModelCheckpoint, TensorBoard
 from utils import pad_left, prepare_dataset, check_encoding
 from sklearn.model_selection import train_test_split
 
