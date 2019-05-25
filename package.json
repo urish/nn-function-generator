@@ -6,6 +6,7 @@
   "author": "Uri Shaked <uri@urishaked.com>",
   "license": "MIT",
   "scripts": {
+    "build:cloud": "gcloud builds submit --tag gcr.io/code-ml-experiments/nn-function-generator --project code-ml-experiments",
     "dataset": "ts-node src/index",
     "start": "ts-node-dev src/function-server",
     "test": "jest"
