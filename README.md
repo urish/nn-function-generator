@@ -14,6 +14,18 @@ Experimenting with automatic generation of TS function bodies using ANN models
 2. Run `yarn start`
 3. Go to `http://localhost:3003/` and have fun!
 
+Alternatively, you can use docker and generate an image for the playground app using the
+provided [Dockerfile](Dockerfile):
+
+```bash
+docker build -t nn-function-gen .
+docker -it -v /path/to/dataset:/app/data -v /path/to/model/runs:/app/runs -p 3003:3003 run nn-function-gen 
+```
+
+Remember to replace `/path/to/dataset` and `/path/to/model/runs` with the appropriate paths for your machine. The image is configured to load the model from the first run (`run_001`) by default.
+
+After starting the container, you can go to [http://localhost:3003](http://localhost:3003/) to launch the playground.
+
 ## Training on Google Cloud TPU
 
 ```
