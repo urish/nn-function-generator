@@ -10,7 +10,7 @@ import { restoreIdentifiers } from './restore-identifiers';
 
 const app = express();
 
-const port = 3003;
+const port = process.env.PORT || 3003;
 
 app.use(express.static(join(__dirname, 'web')));
 
