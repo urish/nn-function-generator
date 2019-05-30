@@ -3,6 +3,7 @@ import { FunctionDeclaration } from 'typescript';
 import { renameArgs } from './rename-args';
 import { renameIdentifiers } from './rename-identifiers';
 import { spaceTokens } from './space-tokens';
+import { stripComments } from './strip-comments';
 
 export interface IInputRecord {
   id: string;
@@ -64,7 +65,7 @@ export function prepareFunction(parsedRecord: IInputRecord): IFunction | null {
   }
 
   const { result, identifiers } = renameIdentifiers(tsquery.ast(renameArgs(ast)));
-  const cleanAst = tsquery.ast(spaceTokens(tsquery.ast(result)));
+  const cleanAst = tsquery.ast(spaceTokens(tsquery.ast(stripComments(tsquery.ast(result)))));
   const cleanFnNode = tsquery.query<FunctionDeclaration>(cleanAst, 'FunctionDeclaration')[0];
   const prolog = cleanAst
     .getFullText()
