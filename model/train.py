@@ -170,12 +170,7 @@ if args.tpu:
 
 if not dry_run:
   # set up callbacks
-  tensorboard = TensorBoard(log_dir=run_dir,
-    batch_size=batch_size,
-    embeddings_freq=1,
-    embeddings_layer_names=['x1_out_hidden', 'x2_out_hidden'],
-    embeddings_metadata='metadata.tsv',
-    embeddings_data=[x1_test, x2_test])
+  tensorboard = TensorBoard(log_dir=run_dir, embeddings_freq=1)
 
   callbacks = [tensorboard]
 
