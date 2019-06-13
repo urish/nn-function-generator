@@ -75,7 +75,7 @@ if not dry_run:
 
 tokenizer = Tokenizer(filters='', split=" ", lower=False)
 
-dataframe = pd.read_csv('../data/dataset.csv', engine='python')
+dataframe = pd.read_json('../data/dataset.json', lines=True)
 dataset = dataframe.values
 
 n_observations = dataset.shape[0]

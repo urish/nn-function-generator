@@ -1,6 +1,7 @@
 node_modules
 *.log
 *.csv
+data/dataset.json
 *.python-version
 runs
 __pycache__
