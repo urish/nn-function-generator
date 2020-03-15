@@ -17,7 +17,7 @@
     "@types/node": "^10.12.18",
     "@types/prettier": "^1.15.2",
     "@types/progress": "^2.0.3",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "chalk": "^2.4.2",
     "express": "^4.16.4",
     "prettier": "^1.16.1",
